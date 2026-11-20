@@ -1,0 +1,24 @@
+@startuml c4-container
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Christmas Delivery - Container View
+
+Person(santa, "Santa Claus", "Requests cancellation of presents for families")
+Person(mrsClaus, "Mrs Claus", "Coordinates present distribution")
+Person(elf, "Delivery Elf", "Packs presents onto sleigh")
+
+System_Boundary(delivery, "Christmas Delivery System") {
+    Container(app, "Python 3.12 Application", "python", "Modular monolith with Present Management, Delivery Scheduling, Sleigh Management\nIn-memory storage for presents, families, elves, sleigh")
+}
+
+System_Ext(toyMachines, "Toy Machines", "Produces presents for different families")
+System_Ext(sleigh, "Santa's Sleigh", "Receives packed presents")
+
+Rel(toyMachines, app, "Supplies presents")
+Rel(mrsClaus, app, "Coordinates deliveries")
+Rel(santa, app, "Requests cancellations")
+Rel(app, elf, "Assigns presents")
+Rel(elf, sleigh, "Loads presents")
+
+@enduml

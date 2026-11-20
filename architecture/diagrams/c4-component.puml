@@ -1,0 +1,19 @@
+@startuml c4-component
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Christmas Delivery - Component View
+
+Container_Boundary(app, "Christmas Delivery Application") {
+    Component(presentMgmt, "Present Management", "python", "Handles present reception, tracking, family grouping, cancellation")
+
+    Component(deliverySched, "Delivery Scheduling", "python", "Owns elf availability and assignments\nCoordinates present-to-elf matching\nHolds presents when no elves available")
+
+    Component(sleighMgmt, "Sleigh Management", "python", "Records present loading onto sleigh\nReports elf completion via callback")
+}
+
+Rel(deliverySched, presentMgmt, "Requests available presents")
+Rel(deliverySched, sleighMgmt, "Requests present loading")
+Rel(sleighMgmt, deliverySched, "Reports completion via callback")
+
+@enduml

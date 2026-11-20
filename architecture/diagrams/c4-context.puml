@@ -1,0 +1,23 @@
+
+@startuml c4-context
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title Christmas Delivery - System Context
+
+Person(santa, "Santa Claus", "Requests cancellation of presents for families")
+Person(mrsClaus, "Mrs Claus", "Coordinates present distribution")
+Person(elf, "Delivery Elf", "Transports presents to the sleigh")
+
+System(delivery, "Christmas Delivery System", "Coordinates present receiving, elf allocation, family grouping and cancellation")
+
+System_Ext(machine, "Toy Machines", "Produce presents for different families")
+System_Ext(sleigh, "Santa's Sleigh", "Receives packed presents")
+
+Rel(machine, delivery, "Supplies presents")
+Rel(mrsClaus, delivery, "Coordinates deliveries")
+Rel(santa, delivery, "Requests cancellations")
+Rel(delivery, elf, "Assigns presents")
+Rel(elf, sleigh, "Packs presents")
+
+@enduml
