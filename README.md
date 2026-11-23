@@ -24,7 +24,7 @@ Agents communicate through well-defined artefacts (files, structured outputs, Gi
 ## Course Progress
 
 - [ ] Module 1: Git Workflow Agent
-- [ ] Module 2: Software Architecture Agent
+- [x] Module 2: Software Architecture Agent
 - [ ] Module 3: Software Requirements Agent
 - [ ] Module 4: CI/CD Agent
 - [ ] Module 5: TDD/BDD Multi-Agent System
