@@ -34,7 +34,6 @@
 
 - `present.md` - PRESENT domain stories
 - `scheduling.md` - SCHEDULING domain stories
-- `loading.md` - LOADING domain stories
 
 ## Notes
 

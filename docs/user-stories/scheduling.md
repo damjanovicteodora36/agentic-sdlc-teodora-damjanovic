@@ -154,6 +154,8 @@
 **Story Type**: Infrastructure
 **Parent Story**: AS A Present Availability Interface I WANT Delivery Scheduling to query available presents from Present Management SO THAT Mrs Claus can assign them to elves
 
+**Note**: Integration concern — describes internal component communication in the single-process modular monolith
+
 ### SCENARIO 1: Query available presents from Present Management
 
 **Scenario ID**: SCHEDULING-INFRA-001.2-S1
@@ -174,6 +176,8 @@
 **Parent Story ID**: SCHEDULING-STORY-001
 **Story Type**: Infrastructure
 **Parent Story**: AS A Component Communication Interface I WANT Sleigh Management to notify Delivery Scheduling when elves complete assignments SO THAT elves can receive new presents
+
+**Note**: Integration concern — describes internal component communication in the single-process modular monolith
 
 ### SCENARIO 1: Notify Delivery Scheduling when elf completes loading
 
