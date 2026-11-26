@@ -64,3 +64,13 @@ repos:
         language: system
         files: '\.puml$'
         pass_filenames: false
+
+  # Docker build and test validation
+  - repo: local
+    hooks:
+      - id: docker-test
+        name: Docker Build and Test
+        entry: bash scripts/hooks/docker-test.sh
+        language: system
+        files: '(^src/|^tests/|^Dockerfile$|^pyproject\.toml$|^\.dockerignore$)'
+        pass_filenames: false

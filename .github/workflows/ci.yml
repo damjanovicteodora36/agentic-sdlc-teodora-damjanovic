@@ -1,0 +1,44 @@
+on:
+  push:
+    branches:
+      - main
+      - feature/**
+      - fix/**
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'Dockerfile'
+      - 'pyproject.toml'
+      - '.github/workflows/ci.yml'
+      - '.dockerignore'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'Dockerfile'
+      - 'pyproject.toml'
+      - '.github/workflows/ci.yml'
+      - '.dockerignore'
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: app:latest
+
+      - name: Run tests in Docker container
+        run: docker run --rm app:latest pytest tests/ -v --tb=short
