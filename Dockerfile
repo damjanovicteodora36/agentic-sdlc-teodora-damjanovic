@@ -10,4 +10,4 @@ RUN pip install --no-cache-dir pytest pytest-bdd
 COPY . .
 
 # Run the test suite
-CMD ["pytest", "tests/", "-v", "--tb=short"]
+CMD ["python", "-m", "pytest", "tests/", "-v", "--tb=short"]

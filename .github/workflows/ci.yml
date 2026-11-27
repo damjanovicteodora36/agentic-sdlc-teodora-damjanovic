@@ -41,4 +41,4 @@ jobs:
           tags: app:latest
 
       - name: Run tests in Docker container
-        run: docker run --rm app:latest pytest tests/ -v --tb=short
+        run: docker run --rm app:latest

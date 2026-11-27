@@ -205,7 +205,67 @@
 * The module imports correctly without syntax errors
 * The Present Management component initializes in-memory state structures (`presents`, `family_groups`, `cancelled_families`)
 * The application starts successfully with all required components available for the delivery workflow
-* No Docker container, cloud infrastructure, or external services are required
+* No cloud infrastructure or external services are required—Docker is used for CI/testing packaging only, without changing the approved Python 3.12 modular monolith architecture
+
+### PRESENT-INFRA-001.5
+
+**Parent Story ID**: PRESENT-STORY-001
+**Story Type**: Infrastructure
+**Parent Story**: AS A CI Pipeline Component I WANT the Dockerfile to build successfully SO THAT automated tests can execute in a consistent environment
+
+### SCENARIO 1: Docker image builds with Python 3.12 and test dependencies
+
+**Scenario ID**: PRESENT-INFRA-001.5-S1
+
+**GIVEN**
+* The project contains a valid Dockerfile using Python 3.12-slim base image
+* The Dockerfile installs pytest and pytest-bdd directly via `pip install`
+* The source code and test files exist in the project directory
+
+**WHEN**
+* `docker build -t kata-tests .` is executed
+
+**THEN**
+* The Docker image builds successfully from Python 3.12-slim base
+* pytest and pytest-bdd are installed via pip in the Dockerfile
+* The image is ready for test execution
+
+### PRESENT-INFRA-001.6
+
+**Parent Story ID**: PRESENT-STORY-001
+**Story Type**: Infrastructure
+**Parent Story**: AS A CI Pipeline Component I WANT automated tests to execute inside Docker SO THAT test results are consistent across environments
+
+### SCENARIO 1: Test suite runs inside Docker container
+
+**Scenario ID**: PRESENT-INFRA-001.6-S1
+
+**GIVEN**
+* The Docker image `kata-tests` has been built successfully
+* Test files exist in the `tests/` directory
+
+**WHEN**
+* `docker run --rm kata-tests` is executed
+
+**THEN**
+* The pytest test suite runs inside the Docker container
+* Test results are reported to stdout
+* The container exits with appropriate exit code (0 for success, non-zero for failure)
+
+### SCENARIO 2: Test failure propagates correctly
+
+**Scenario ID**: PRESENT-INFRA-001.6-S2
+
+**GIVEN**
+* The Docker image `kata-tests` has been built successfully
+* The pytest command runs in the Docker container
+
+**WHEN**
+* A test fails during execution
+
+**THEN**
+* The failing test is reported in the output
+* The container exits with non-zero exit code
 
 ## Architecture References
 
