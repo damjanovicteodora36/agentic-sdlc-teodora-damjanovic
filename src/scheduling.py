@@ -29,3 +29,18 @@ def assign_present_to_elf(present_id: str, elf_id: str):
 
         # Return assignment record
         return {"elf_id": elf_id, "present_id": present_id}
+
+
+def elf_assignment_completed(elf_id: str) -> None:
+    """Process elf completion of assignment.
+
+    Removes elf from busy_elves and adds back to available_elves.
+    Uses thread-safe locking for state transitions.
+    """
+    with _lock:
+        # Remove elf from busy_elves
+        if elf_id in busy_elves:
+            del busy_elves[elf_id]
+
+        # Add elf back to available_elves
+        available_elves.add(elf_id)

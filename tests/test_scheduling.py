@@ -4,7 +4,12 @@
 import threading
 
 from src.present_management import get_available_presents, presents
-from src.scheduling import assign_present_to_elf, available_elves, busy_elves
+from src.scheduling import (
+    assign_present_to_elf,
+    available_elves,
+    busy_elves,
+    elf_assignment_completed,
+)
 
 
 def test_scheduling_be_001_1_s1_assign_available_present():
@@ -186,3 +191,34 @@ def test_scheduling_infra_001_2_s1_query_available_presents():
     assert presents["P001"]["status"] == "available"
     assert presents["P002"]["status"] == "assigned"
     assert presents["P003"]["status"] == "available"
+
+
+# Story ID: SCHEDULING-INFRA-001.3
+# Scenario ID: SCHEDULING-INFRA-001.3-S1
+
+
+def test_scheduling_infra_001_3_s1_elf_completion():
+    # GIVEN: Elf "E001" has completed loading present "P001" onto the sleigh
+    available_elves.clear()
+    busy_elves.clear()
+
+    # AND: Present "P001" is assigned to elf "E001"
+    presents.clear()
+    presents["P001"] = {
+        "present_id": "P001",
+        "family_id": "F001",
+        "status": "assigned",
+    }
+    busy_elves["E001"] = "P001"
+
+    # AND: Elf "E001" is NOT in available_elves
+    assert "E001" not in available_elves
+
+    # WHEN: Sleigh Management calls elf_assignment_completed(elf_id="E001")
+    elf_assignment_completed(elf_id="E001")
+
+    # THEN: Elf "E001" is removed from busy_elves
+    assert "E001" not in busy_elves
+
+    # AND: Elf "E001" is added to available_elves
+    assert "E001" in available_elves
