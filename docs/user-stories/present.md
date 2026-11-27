@@ -205,7 +205,7 @@
 * The module imports correctly without syntax errors
 * The Present Management component initializes in-memory state structures (`presents`, `family_groups`, `cancelled_families`)
 * The application starts successfully with all required components available for the delivery workflow
-* No Docker container, cloud infrastructure, or external services are required
+* No cloud infrastructure or external services are required—Docker is used for CI/testing packaging only, without changing the approved Python 3.12 modular monolith architecture
 
 ## Architecture References
 
