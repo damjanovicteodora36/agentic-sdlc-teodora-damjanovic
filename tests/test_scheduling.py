@@ -3,7 +3,12 @@
 
 import threading
 
-from src.present_management import get_available_presents, presents
+from src.present_management import (
+    family_groups,
+    get_available_presents,
+    presents,
+    receive_present,
+)
 from src.scheduling import (
     assign_present_to_elf,
     available_elves,
@@ -377,3 +382,99 @@ def test_scheduling_infra_001_1_s1_concurrent_assignments():
     assert len(available_elves) == 0
     assert "E001" not in available_elves
     assert "E002" not in available_elves
+
+
+# Story ID: SCHEDULING-STORY-001
+# Scenario ID: SCHEDULING-STORY-001-S3
+
+
+def test_scheduling_story_001_s3_cross_component_concurrent_operations():
+    # GIVEN: Present "P001" is in the "available" status in Present Management
+    # inventory
+    presents.clear()
+    family_groups.clear()
+
+    presents["P001"] = {
+        "present_id": "P001",
+        "family_id": "F001",
+        "status": "available",
+    }
+
+    # AND: Elf "E001" is in the `available_elves` set in Delivery Scheduling
+    available_elves.clear()
+    available_elves.add("E001")
+
+    # AND: The `busy_elves` dictionary is empty
+    busy_elves.clear()
+
+    # Track exceptions raised in worker threads
+    exceptions = []
+
+    # Track assignment result
+    assignment_result = []
+    assignment_lock = threading.Lock()
+
+    # WHEN: Mrs Claus calls assign_present_to_elf while Present Management
+    # processes receive_present
+    def assignment_worker():
+        try:
+            barrier.wait(timeout=5.0)
+            result = assign_present_to_elf(present_id="P001", elf_id="E001")
+            with assignment_lock:
+                assignment_result.append(result)
+        except Exception as e:
+            exceptions.append(e)
+
+    def present_arrival_worker():
+        try:
+            barrier.wait(timeout=5.0)
+            receive_present(present_id="P002", family_id="F002")
+        except Exception as e:
+            exceptions.append(e)
+
+    # Use barrier to synchronize both threads
+    barrier = threading.Barrier(2)
+
+    # Create threads for concurrent operations
+    thread_a = threading.Thread(target=assignment_worker, name="Thread-A")
+    thread_b = threading.Thread(target=present_arrival_worker, name="Thread-B")
+
+    thread_a.start()
+    thread_b.start()
+
+    thread_a.join(timeout=5.0)
+    thread_b.join(timeout=5.0)
+
+    # THEN: Both threads completed without exceptions
+    assert not thread_a.is_alive(), "Thread-A did not complete"
+    assert not thread_b.is_alive(), "Thread-B did not complete"
+    assert len(exceptions) == 0, f"Unexpected exceptions: {exceptions}"
+
+    # AND: Elf "E001" receives present "P001" (atomic assignment)
+    assert len(assignment_result) == 1
+    assert assignment_result[0] == {"elf_id": "E001", "present_id": "P001"}
+
+    # AND: Present "P002" is added to inventory without conflict
+    assert "P002" in presents
+    assert presents["P002"]["present_id"] == "P002"
+    assert presents["P002"]["family_id"] == "F002"
+    assert presents["P002"]["status"] == "available"
+
+    # AND: E001 is moved to busy_elves
+    assert "E001" in busy_elves
+    assert busy_elves["E001"] == "P001"
+
+    # AND: E001 is removed from available_elves
+    assert "E001" not in available_elves
+
+    # AND: Present "P001" is marked assigned
+    assert presents["P001"]["status"] == "assigned"
+
+    # AND: Family group for F002 contains P002
+    assert "F002" in family_groups
+    assert "P002" in family_groups["F002"]
+
+    # AND: No race condition corrupts state
+    # Verify final state consistency
+    assert len(presents) == 2
+    assert presents["P001"]["status"] == "assigned"
