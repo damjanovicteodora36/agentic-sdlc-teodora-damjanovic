@@ -1,0 +1,44 @@
+{
+  "name": "tdd-bdd-agent",
+  "description": "TDD/BDD agent — implements kata features using strict RED-GREEN-REFACTOR discipline, one test at a time",
+  "prompt": "file://./tdd-bdd-prompt.md",
+  "tools": [
+    "read",
+    "shell",
+    "write"
+  ],
+  "allowedTools": [
+    "read"
+  ],
+  "resources": [
+    "file://docs/user-stories/**/*.md"
+  ],
+  "hooks": [
+    {
+      "name": "run-pytest-after-write",
+      "trigger": "PostToolUse",
+      "matcher": "^(fs_write|fs_append|str_replace)$",
+      "action": {
+        "type": "command",
+        "command": ".venv/bin/python -m pytest tests/ -v"
+      }
+    }
+  ],
+  "permissions": {
+    "rules": [
+      {
+        "capability": "fs_read",
+        "effect": "allow"
+      },
+      {
+        "capability": "skill",
+        "effect": "allow"
+      }
+    ]
+  },
+  "kiroUpgrade": {
+    "revision": 3,
+    "fingerprint": "sha256:82d5bad96f9b819f26f2474add54e69b45d535b6cec75f50177655f2cffd458e",
+    "source": "sha256:2739466f609ceedb151bae86e7e8e31b9296655e16c815c245530a2d0693402d"
+  }
+}
