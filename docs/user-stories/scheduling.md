@@ -195,6 +195,8 @@
 * Elf "E001" is added to `available_elves`
 * The completion is processed for next assignment cycle
 
+**Shared Docker CI/testing infrastructure:** The Docker build and test execution requirements defined in PRESENT-INFRA-001.5 and PRESENT-INFRA-001.6 apply to the entire Python modular monolith, including the SCHEDULING component. Both domains share the Dockerfile and CI pipeline introduced in Module 4. No additional Docker service or separate SCHEDULING Docker configuration is required.
+
 ## Frontend (Not Applicable)
 
 **Note**: This Python modular monolith architecture does not include a graphical frontend. All user stories are implemented as internal component interfaces within the single Python process. Elf assignment is triggered by:
