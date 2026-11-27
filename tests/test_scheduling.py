@@ -3,7 +3,7 @@
 
 import threading
 
-from src.present_management import presents
+from src.present_management import get_available_presents, presents
 from src.scheduling import assign_present_to_elf, available_elves, busy_elves
 
 
@@ -136,3 +136,53 @@ def test_scheduling_be_001_2_s1_atomic_elf_assignment():
     assert len(successful_assignments) == 1
     assert successful_assignments[0]["elf_id"] == "E001"
     assert successful_assignments[0]["present_id"] == assigned_present
+
+
+# Story ID: SCHEDULING-INFRA-001.2
+# Scenario ID: SCHEDULING-INFRA-001.2-S1
+
+
+def test_scheduling_infra_001_2_s1_query_available_presents():
+    # GIVEN: Present Management maintains presents dictionary with available
+    # and assigned presents
+    from src.present_management import presents
+
+    presents.clear()
+
+    # AND: Present "P001" is available
+    presents["P001"] = {
+        "present_id": "P001",
+        "family_id": "F001",
+        "status": "available",
+    }
+
+    # AND: Present "P002" is assigned
+    presents["P002"] = {
+        "present_id": "P002",
+        "family_id": "F002",
+        "status": "assigned",
+    }
+
+    # AND: Present "P003" is available
+    presents["P003"] = {
+        "present_id": "P003",
+        "family_id": "F003",
+        "status": "available",
+    }
+
+    # WHEN: get_available_presents() is called on Present Management
+    available = get_available_presents()
+
+    # THEN: Only presents with status "available" are returned
+    assert len(available) == 2
+    assert "P001" in available
+    assert "P003" in available
+
+    # AND: Assigned presents are excluded from the result
+    assert "P002" not in available
+
+    # AND: The original inventory remains unchanged
+    assert len(presents) == 3
+    assert presents["P001"]["status"] == "available"
+    assert presents["P002"]["status"] == "assigned"
+    assert presents["P003"]["status"] == "available"
