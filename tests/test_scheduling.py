@@ -224,6 +224,60 @@ def test_scheduling_infra_001_3_s1_elf_completion():
     assert "E001" in available_elves
 
 
+# Story ID: SCHEDULING-STORY-001
+# Scenario ID: SCHEDULING-STORY-001-S2
+
+
+def test_scheduling_story_001_s2_multiple_elf_assignments():
+    # GIVEN: Present "P001" and "P002" are in the "available" status
+    # in Present Management inventory
+    presents.clear()
+    presents["P001"] = {
+        "present_id": "P001",
+        "family_id": "F001",
+        "status": "available",
+    }
+    presents["P002"] = {
+        "present_id": "P002",
+        "family_id": "F002",
+        "status": "available",
+    }
+
+    # AND: Elf "E001" and "E002" are in the `available_elves` set
+    available_elves.clear()
+    available_elves.update(["E001", "E002"])
+
+    # AND: The `busy_elves` dictionary is empty
+    busy_elves.clear()
+
+    # WHEN: Mrs Claus calls assign_present_to_elf for both elves
+    assignment_1 = assign_present_to_elf(present_id="P001", elf_id="E001")
+    assignment_2 = assign_present_to_elf(present_id="P002", elf_id="E002")
+
+    # THEN: Elf "E001" receives present "P001" and is moved to busy_elves
+    assert assignment_1 is not None
+    assert assignment_1 == {"elf_id": "E001", "present_id": "P001"}
+    assert busy_elves["E001"] == "P001"
+
+    # AND: Elf "E002" receives present "P002" and is moved to busy_elves
+    assert assignment_2 is not None
+    assert assignment_2 == {"elf_id": "E002", "present_id": "P002"}
+    assert busy_elves["E002"] == "P002"
+
+    # AND: Both presents are marked as "assigned" in Present Management
+    assert presents["P001"]["status"] == "assigned"
+    assert presents["P002"]["status"] == "assigned"
+
+    # AND: No duplicate assignments occur
+    assert len(busy_elves) == 2
+    assert busy_elves == {"E001": "P001", "E002": "P002"}
+
+    # AND: Both elves are removed from available_elves
+    assert "E001" not in available_elves
+    assert "E002" not in available_elves
+    assert len(available_elves) == 0
+
+
 # Story ID: SCHEDULING-INFRA-001.1
 # Scenario ID: SCHEDULING-INFRA-001.1-S1
 
