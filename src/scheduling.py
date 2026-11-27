@@ -1,20 +1,31 @@
 """Delivery Scheduling component."""
 
+import threading
+
 from src.present_management import presents
 
 available_elves = set()
 busy_elves = {}
+_lock = threading.Lock()
 
 
 def assign_present_to_elf(present_id: str, elf_id: str):
-    """Assign a present to an elf."""
-    # Move elf from available to busy
-    available_elves.discard(elf_id)
-    busy_elves[elf_id] = present_id
+    """Assign a present to an elf atomically.
 
-    # Update present status to assigned
-    if present_id in presents:
-        presents[present_id]["status"] = "assigned"
+    Returns the assignment dict if successful, None if the elf is unavailable.
+    """
+    with _lock:
+        # Check if elf is available
+        if elf_id not in available_elves:
+            return None
 
-    # Return assignment record
-    return {"elf_id": elf_id, "present_id": present_id}
+        # Remove elf from available and add to busy
+        available_elves.discard(elf_id)
+        busy_elves[elf_id] = present_id
+
+        # Update present status to assigned
+        if present_id in presents:
+            presents[present_id]["status"] = "assigned"
+
+        # Return assignment record
+        return {"elf_id": elf_id, "present_id": present_id}
