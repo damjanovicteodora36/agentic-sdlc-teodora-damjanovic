@@ -222,3 +222,104 @@ def test_scheduling_infra_001_3_s1_elf_completion():
 
     # AND: Elf "E001" is added to available_elves
     assert "E001" in available_elves
+
+
+# Story ID: SCHEDULING-INFRA-001.1
+# Scenario ID: SCHEDULING-INFRA-001.1-S1
+
+
+def test_scheduling_infra_001_1_s1_concurrent_assignments():
+    # GIVEN: The available_elves set contains elves "E001" and "E002"
+    available_elves.clear()
+    available_elves.update(["E001", "E002"])
+
+    # AND: The busy_elves dictionary is empty
+    busy_elves.clear()
+
+    # AND: Present "P001" and "P002" are available from Present Management
+    presents.clear()
+    presents["P001"] = {
+        "present_id": "P001",
+        "family_id": "F001",
+        "status": "available",
+    }
+    presents["P002"] = {
+        "present_id": "P002",
+        "family_id": "F002",
+        "status": "available",
+    }
+
+    # Track exceptions raised in worker threads
+    exceptions = []
+
+    # Track successful assignments
+    assignments = []
+    assignments_lock = threading.Lock()
+
+    # Worker function: concurrent assignment calls for different elves
+    def assignment_worker(present_id, elf_id):
+        try:
+            barrier.wait(timeout=5.0)
+            result = assign_present_to_elf(present_id=present_id, elf_id=elf_id)
+            with assignments_lock:
+                assignments.append(result)
+        except Exception as e:
+            exceptions.append(e)
+
+    # Use barrier to synchronize both threads
+    barrier = threading.Barrier(2)
+
+    # Create threads that request DIFFERENT elves concurrently
+    thread_a = threading.Thread(
+        target=assignment_worker, args=("P001", "E001"), name="Thread-A"
+    )
+    thread_b = threading.Thread(
+        target=assignment_worker, args=("P002", "E002"), name="Thread-B"
+    )
+
+    thread_a.start()
+    thread_b.start()
+
+    thread_a.join(timeout=5.0)
+    thread_b.join(timeout=5.0)
+
+    # AND: Both threads completed without exceptions
+    assert not thread_a.is_alive(), "Thread-A did not complete"
+    assert not thread_b.is_alive(), "Thread-B did not complete"
+    assert len(exceptions) == 0, f"Unexpected exceptions: {exceptions}"
+
+    # THEN: Both assignments are non-None and match exact expected mappings
+    assert (
+        len(assignments) == 2
+    ), f"Expected 2 successful assignments, got {len(assignments)}: {assignments}"
+
+    # E001 -> P001
+    assignment_e001_p001 = next(
+        (a for a in assignments if a["elf_id"] == "E001" and a["present_id"] == "P001"),
+        None,
+    )
+    assert assignment_e001_p001 is not None, "E001 -> P001 assignment not found"
+
+    # E002 -> P002
+    assignment_e002_p002 = next(
+        (a for a in assignments if a["elf_id"] == "E002" and a["present_id"] == "P002"),
+        None,
+    )
+    assert assignment_e002_p002 is not None, "E002 -> P002 assignment not found"
+
+    # AND: E001 is in busy_elves with present P001
+    assert "E001" in busy_elves
+    assert busy_elves["E001"] == "P001"
+
+    # AND: E002 is in busy_elves with present P002
+    assert "E002" in busy_elves
+    assert busy_elves["E002"] == "P002"
+
+    # AND: Both presents are marked as "assigned"
+    assert presents["P001"]["status"] == "assigned"
+    assert presents["P002"]["status"] == "assigned"
+
+    # AND: No race condition corrupts available_elves state (both moved to busy)
+    assert len(available_elves) == 0
+    assert "E001" not in available_elves
+    assert "E002" not in available_elves
